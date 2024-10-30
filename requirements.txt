@@ -1,0 +1,5 @@
+aiogram==2.25.1
+aiofiles==24.1.0
+python-dotenv==1.0.1
+yt-dlp==2024.9.17.232940.dev0
+aiosqlite==0.20.0
