@@ -42,10 +42,6 @@ async def send_anime_list(chat_id, message_id, page):
             keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"anime_page:{page-1}"))
         keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"anime_page:{page+1}"))
         keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🐹 $HMSTR", url="https://t.me/hamster_kombat_boT/start?startapp=kentId1741564693")
-        )
         try:
             await bot.edit_message_text(
                 response, chat_id, message_id,
@@ -81,10 +77,6 @@ async def send_movies_list(chat_id, message_id, page):
             keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"movie_page:{page-1}"))
         keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"movie_page:{page+1}"))
         keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🐹 $HMSTR", url="https://t.me/hamster_kombat_boT/start?startapp=kentId1741564693")
-        )
         try:
             await bot.edit_message_text(
                 response, chat_id, message_id,
@@ -121,10 +113,6 @@ async def send_series_list(chat_id, message_id, page):
             keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"series_page:{page-1}"))
         keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"series_page:{page+1}"))
         keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🐹 $HMSTR", url="https://t.me/hamster_kombat_boT/start?startapp=kentId1741564693")
-        )
         try:
             await bot.edit_message_text(
                 response, chat_id, message_id,
@@ -161,10 +149,6 @@ async def send_cartoon_list(chat_id, message_id, page):
             keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"cartoon_page:{page-1}"))
         keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"cartoon_page:{page+1}"))
         keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🐹 $HMSTR", url="https://t.me/hamster_kombat_boT/start?startapp=kentId1741564693")
-        )
         try:
             await bot.edit_message_text(
                 response, chat_id, message_id,
