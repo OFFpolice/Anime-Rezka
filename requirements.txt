@@ -1,3 +1,3 @@
 python-dotenv==1.0.1
 aiogram==2.25.1
-rezka-scraper==0.0.4
+rezka-scraper==0.0.5
