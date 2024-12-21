@@ -1,5 +1,6 @@
 import os
 import logging
+import hashlib
 from dotenv import load_dotenv
 from os.path import join, dirname
 from aiogram import Bot, Dispatcher, executor, types
@@ -26,37 +27,51 @@ scraper = RezkaScraper()
 async def send_anime_list(chat_id, message_id, page):
     bot_info = await bot.get_me()
     bot_username = bot_info.username
-    matches = await scraper.search_anime(page)
-    if matches:
-        response = "<b>🍿 Найденные аниме:</b>\n"
-        for title, link in matches:
-            response += f"🔹 <a href=\"{link}\">{title}</a>\n"
-        response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
-        
-        keyboard = types.InlineKeyboardMarkup(row_width=2)
-        if page > 1:
-            keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"anime_page:{page-1}"))
-        keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"anime_page:{page+1}"))
-        keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
-        )
-        try:
-            await bot.edit_message_text(
-                response, chat_id, message_id,
-                parse_mode=types.ParseMode.HTML,
-                reply_markup=keyboard,
-                disable_web_page_preview=True
+    try:
+        matches = await scraper.search_anime(page)
+        if matches:
+            response = "<b>🍿 Найденные аниме:</b>\n"
+            for title, link in matches:
+                response += f"🔹 <a href=\"{link}\">{title}</a>\n"
+            response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            if page > 1:
+                keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"anime_page:{page-1}"))
+            keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"anime_page:{page+1}"))
+            keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
             )
-        except MessageNotModified:
-            pass
-    else:
+            try:
+                await bot.edit_message_text(
+                    response, chat_id, message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard,
+                    disable_web_page_preview=True
+                )
+            except MessageNotModified:
+                pass
+        else:
+            keyboard = types.InlineKeyboardMarkup(row_width=1)
+            keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            try:
+                await bot.edit_message_text(
+                    "<b>❌ Ничего не найдено!</b>",
+                    chat_id,
+                    message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard
+                )
+            except MessageNotModified:
+                pass
+    except Exception as e:
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+        error_message = f"<b>⚠️ Произошла ошибка при обработке запроса. Попробуйте снова позже.</b>\n\n<b>❌ Ошибка:</b> <code>{e}</code>"
         try:
             await bot.edit_message_text(
-                "<b>❌ Ничего не найдено!</b>",
+                error_message,
                 chat_id,
                 message_id,
                 parse_mode=types.ParseMode.HTML,
@@ -68,36 +83,51 @@ async def send_anime_list(chat_id, message_id, page):
 async def send_movies_list(chat_id, message_id, page):
     bot_info = await bot.get_me()
     bot_username = bot_info.username
-    matches = await scraper.search_movies(page)
-    if matches:
-        response = "<b>🍿 Найденные фильмы:</b>\n"
-        for title, link in matches:
-            response += f"🔹 <a href=\"{link}\">{title}</a>\n"
-        response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
-        keyboard = types.InlineKeyboardMarkup(row_width=2)
-        if page > 1:
-            keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"movie_page:{page-1}"))
-        keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"movie_page:{page+1}"))
-        keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
-        )
-        try:
-            await bot.edit_message_text(
-                response, chat_id, message_id,
-                parse_mode=types.ParseMode.HTML,
-                reply_markup=keyboard,
-                disable_web_page_preview=True
+    try:
+        matches = await scraper.search_movies(page)
+        if matches:
+            response = "<b>🍿 Найденные фильмы:</b>\n"
+            for title, link in matches:
+                response += f"🔹 <a href=\"{link}\">{title}</a>\n"
+            response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            if page > 1:
+                keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"movie_page:{page-1}"))
+            keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"movie_page:{page+1}"))
+            keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
             )
-        except MessageNotModified:
-            pass
-    else:
+            try:
+                await bot.edit_message_text(
+                    response, chat_id, message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard,
+                    disable_web_page_preview=True
+                )
+            except MessageNotModified:
+                pass
+        else:
+            keyboard = types.InlineKeyboardMarkup(row_width=1)
+            keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            try:
+                await bot.edit_message_text(
+                    "<b>❌ Ничего не найдено!</b>",
+                    chat_id,
+                    message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard
+                )
+            except MessageNotModified:
+                pass
+    except Exception as e:
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+        error_message = f"<b>⚠️ Произошла ошибка при обработке запроса. Попробуйте снова позже.</b>\n\n<b>❌ Ошибка:</b> <code>{e}</code>"
         try:
             await bot.edit_message_text(
-                "<b>❌ Ничего не найдено!</b>",
+                error_message,
                 chat_id,
                 message_id,
                 parse_mode=types.ParseMode.HTML,
@@ -109,37 +139,51 @@ async def send_movies_list(chat_id, message_id, page):
 async def send_series_list(chat_id, message_id, page):
     bot_info = await bot.get_me()
     bot_username = bot_info.username
-    matches = await scraper.search_series(page)
-    if matches:
-        response = "<b>📺 Найденные сериалы:</b>\n"
-        for title, link in matches:
-            response += f"🔹 <a href=\"{link}\">{title}</a>\n"
-        response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
-        
-        keyboard = types.InlineKeyboardMarkup(row_width=2)
-        if page > 1:
-            keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"series_page:{page-1}"))
-        keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"series_page:{page+1}"))
-        keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
-        )
-        try:
-            await bot.edit_message_text(
-                response, chat_id, message_id,
-                parse_mode=types.ParseMode.HTML,
-                reply_markup=keyboard,
-                disable_web_page_preview=True
+    try:
+        matches = await scraper.search_series(page)
+        if matches:
+            response = "<b>📺 Найденные сериалы:</b>\n"
+            for title, link in matches:
+                response += f"🔹 <a href=\"{link}\">{title}</a>\n"
+            response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            if page > 1:
+                keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"series_page:{page-1}"))
+            keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"series_page:{page+1}"))
+            keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
             )
-        except MessageNotModified:
-            pass
-    else:
+            try:
+                await bot.edit_message_text(
+                    response, chat_id, message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard,
+                    disable_web_page_preview=True
+                )
+            except MessageNotModified:
+                pass
+        else:
+            keyboard = types.InlineKeyboardMarkup(row_width=1)
+            keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            try:
+                await bot.edit_message_text(
+                    "<b>❌ Ничего не найдено!</b>",
+                    chat_id,
+                    message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard
+                )
+            except MessageNotModified:
+                pass
+    except Exception as e:
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+        error_message = f"<b>⚠️ Произошла ошибка при обработке запроса. Попробуйте снова позже.</b>\n\n<b>❌ Ошибка:</b> <code>{e}</code>"
         try:
             await bot.edit_message_text(
-                "<b>❌ Ничего не найдено!</b>",
+                error_message,
                 chat_id,
                 message_id,
                 parse_mode=types.ParseMode.HTML,
@@ -151,37 +195,51 @@ async def send_series_list(chat_id, message_id, page):
 async def send_cartoon_list(chat_id, message_id, page):
     bot_info = await bot.get_me()
     bot_username = bot_info.username
-    matches = await scraper.search_cartoons(page)
-    if matches:
-        response = "<b>🍿 Найденные мультфильмы:</b>\n"
-        for title, link in matches:
-            response += f"🔹 <a href=\"{link}\">{title}</a>\n"
-        response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
-        
-        keyboard = types.InlineKeyboardMarkup(row_width=2)
-        if page > 1:
-            keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"cartoon_page:{page-1}"))
-        keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"cartoon_page:{page+1}"))
-        keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
-        keyboard.add(
-            types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
-            types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
-        )
-        try:
-            await bot.edit_message_text(
-                response, chat_id, message_id,
-                parse_mode=types.ParseMode.HTML,
-                reply_markup=keyboard,
-                disable_web_page_preview=True
+    try:
+        matches = await scraper.search_cartoons(page)
+        if matches:
+            response = "<b>🍿 Найденные мультфильмы:</b>\n"
+            for title, link in matches:
+                response += f"🔹 <a href=\"{link}\">{title}</a>\n"
+            response += f"\n<b>🤖: @{bot_username} | 📑: {page}</b>"
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            if page > 1:
+                keyboard.insert(types.InlineKeyboardButton("« Назад", callback_data=f"cartoon_page:{page-1}"))
+            keyboard.insert(types.InlineKeyboardButton("Вперёд »", callback_data=f"cartoon_page:{page+1}"))
+            keyboard.insert(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
             )
-        except MessageNotModified:
-            pass
-    else:
+            try:
+                await bot.edit_message_text(
+                    response, chat_id, message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard,
+                    disable_web_page_preview=True
+                )
+            except MessageNotModified:
+                pass
+        else:
+            keyboard = types.InlineKeyboardMarkup(row_width=1)
+            keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+            try:
+                await bot.edit_message_text(
+                    "<b>❌ Ничего не найдено!</b>",
+                    chat_id,
+                    message_id,
+                    parse_mode=types.ParseMode.HTML,
+                    reply_markup=keyboard
+                )
+            except MessageNotModified:
+                pass
+    except Exception as e:
         keyboard = types.InlineKeyboardMarkup(row_width=1)
         keyboard.add(types.InlineKeyboardButton("🏠 Главное меню", callback_data="main_menu"))
+        error_message = f"<b>⚠️ Произошла ошибка при обработке запроса. Попробуйте снова позже.</b>\n\n<b>❌ Ошибка:</b> <code>{e}</code>"
         try:
             await bot.edit_message_text(
-                "<b>❌ Ничего не найдено!</b>",
+                error_message,
                 chat_id,
                 message_id,
                 parse_mode=types.ParseMode.HTML,
@@ -219,7 +277,7 @@ async def cmd_start(message: types.Message):
 @dp.message_handler(commands=["paysupport"])
 async def cmd_paysupport(message: types.Message):
     paysupport_text = (
-        f"{markdown.hide_link('https://telegram.org/blog/telegram-stars')}<b>Добровольные пожертвования не подразумевают возврат средств.</b>"
+        f"{markdown.hide_link('https://i.imgur.com/znbreEu_d.jpeg?maxwidth=520&shape=thumb&fidelity=high')}<b>Добровольные пожертвования не подразумевают возврат средств.</b>"
     )
     await bot.send_message(
         message.chat.id,
@@ -385,23 +443,135 @@ async def successful_payment(message: types.Message):
         protect_content=True
     )
 
-@dp.message_handler(content_types="text")
+@dp.message_handler(content_types=[types.ContentType.TEXT])
 async def search(message: types.Message):
-    name = message.text
+    if message.via_bot or message.text.startswith('/'):
+        return
+
+    name = message.text.strip()
     await bot.send_chat_action(message.chat.id, "typing")
-    title, link = await scraper.search_rezka(name)
-    if title:
+    try:
+        title, link = await scraper.search_rezka(name)
+        if title:
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            keyboard.add(
+                types.InlineKeyboardButton("🍿 Смотреть на Rezka.ag", url=link)
+            )
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
+            )
+            await message.answer(
+                f"<b>🎞 Название:</b> <a href=\"{link}\">{title}</a>",
+                parse_mode=types.ParseMode.HTML,
+                reply_markup=keyboard
+            )
+            await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        else:
+            await message.answer("<b>❌ Ничего не найдено!</b> Попробуйте изменить запрос или введите другое название.", parse_mode=types.ParseMode.HTML)
+            await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    except Exception as e:
+        await message.answer(f"<b>⚠️ Произошла ошибка при обработке запроса. Попробуйте снова позже.</b>\n\n<b>❌ Ошибка:</b> <code>{e}</code>", parse_mode=types.ParseMode.HTML)
+        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+
+@dp.inline_handler()
+async def inline_search(query: types.InlineQuery):
+    name = query.query.strip()
+    try:
+        if not name:
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            keyboard.add(
+                types.InlineKeyboardButton("💬 Новый", switch_inline_query=""),
+                types.InlineKeyboardButton("💬 Текущий", switch_inline_query_current_chat="")
+            )
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
+            )
+            result = types.InlineQueryResultArticle(
+                id="no_query",
+                title="🔍 Введите поисковый запрос!",
+                description="Введите название аниме, фильма, сериала или мультфильма, для поиска на Rezka.ag.",
+                input_message_content=types.InputTextMessageContent(
+                    message_text="🔍 Для поиска введите название аниме, фильма, сериала или мультфильма, и я помогу тебе отыскать это на Rezka.ag.",
+                    parse_mode=types.ParseMode.HTML
+                ),
+                reply_markup=keyboard,
+                thumb_url="https://i.imgur.com/znbreEu_d.jpeg?maxwidth=520&shape=thumb&fidelity=high"
+            )
+            await query.answer([result], cache_time=1, is_personal=True, switch_pm_text="Нажмите, чтобы перейти в бота.", switch_pm_parameter="start")
+            return
+
+        title, link = await scraper.search_rezka(name)
+        if title:
+            result_id = hashlib.md5(link.encode()).hexdigest()
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            keyboard.add(
+                types.InlineKeyboardButton("🍿 Смотреть на Rezka.ag", url=link)
+            )
+            keyboard.add(
+                types.InlineKeyboardButton("💬 Новый", switch_inline_query=""),
+                types.InlineKeyboardButton("💬 Текущий", switch_inline_query_current_chat="")
+            )
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
+            )
+            result = types.InlineQueryResultArticle(
+                id=result_id,
+                title=title,
+                description="Нажмите, чтобы посмотреть.",
+                input_message_content=types.InputTextMessageContent(
+                    message_text=f"<b>🎞 Название:</b> <a href=\"{link}\">{title}</a>",
+                    parse_mode=types.ParseMode.HTML
+                ),
+                reply_markup=keyboard
+            )
+            await query.answer([result], cache_time=1, is_personal=True, switch_pm_text="Нажмите, чтобы перейти в бота.", switch_pm_parameter="start")
+        else:
+            keyboard = types.InlineKeyboardMarkup(row_width=2)
+            keyboard.add(
+                types.InlineKeyboardButton("💬 Новый", switch_inline_query=""),
+                types.InlineKeyboardButton("💬 Текущий", switch_inline_query_current_chat="")
+            )
+            keyboard.add(
+                types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
+                types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
+            )
+            result = types.InlineQueryResultArticle(
+                id="no_query",
+                title="❌ Ничего не найдено!",
+                description="Попробуйте изменить запрос или введите другое название.",
+                input_message_content=types.InputTextMessageContent(
+                    message_text="<b>❌ Ничего не найдено!</b> Попробуйте изменить запрос или введите другое название.",
+                    parse_mode=types.ParseMode.HTML
+                ),
+                reply_markup=keyboard,
+                thumb_url="https://i.imgur.com/znbreEu_d.jpeg?maxwidth=520&shape=thumb&fidelity=high"
+            )
+            await query.answer([result], cache_time=1, is_personal=True, switch_pm_text="Нажмите, чтобы перейти в бота.", switch_pm_parameter="start")
+    except Exception as e:
         keyboard = types.InlineKeyboardMarkup(row_width=2)
-        keyboard.add(types.InlineKeyboardButton("🍿 Смотреть на Rezka.ag", url=link))
+        keyboard.add(
+            types.InlineKeyboardButton("💬 Новый", switch_inline_query=""),
+            types.InlineKeyboardButton("💬 Текущий", switch_inline_query_current_chat="")
+        )
         keyboard.add(
             types.InlineKeyboardButton("🌀 Shazam Bot", url="https://t.me/OFFpoliceShazamBot"),
             types.InlineKeyboardButton("🎞 HDrezka", url="https://t.me/hdrezka_channel")
         )
-        await message.answer(f"<b>🎞 Название:</b> <a href=\"{link}\">{title}</a>", parse_mode=types.ParseMode.HTML, reply_markup=keyboard)
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-    else:
-        await message.answer("❌ Извините, но я не смог найти это на Rezka.ag.")
-        await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+        result = types.InlineQueryResultArticle(
+            id="no_query",
+            title="⚠️ Произошла ошибка!",
+            description="Произошла ошибка при обработке запроса. Попробуйте снова позже.",
+            input_message_content=types.InputTextMessageContent(
+                message_text=f"<b>⚠️ Произошла ошибка при обработке запроса. Попробуйте снова позже.</b>\n\n<b>❌ Ошибка:</b> <code>{e}</code>",
+                parse_mode=types.ParseMode.HTML
+            ),
+            reply_markup=keyboard,
+            thumb_url="https://i.imgur.com/znbreEu_d.jpeg?maxwidth=520&shape=thumb&fidelity=high"
+        )
+        await query.answer([result], cache_time=1, is_personal=True, switch_pm_text="Нажмите, чтобы перейти в бота.", switch_pm_parameter="start")
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
