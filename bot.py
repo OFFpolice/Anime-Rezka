@@ -451,7 +451,7 @@ async def search(message: types.Message):
     name = message.text.strip()
     await bot.send_chat_action(message.chat.id, "typing")
     try:
-        title, link = await scraper.search_rezka(name)
+        title, link = await scraper.search_rezka(name, images=False)
         if title:
             keyboard = types.InlineKeyboardMarkup(row_width=2)
             keyboard.add(
@@ -502,7 +502,7 @@ async def inline_search(query: types.InlineQuery):
             await query.answer([result], cache_time=1, is_personal=True, switch_pm_text="Нажмите, чтобы перейти в бота.", switch_pm_parameter="start")
             return
 
-        title, link = await scraper.search_rezka(name)
+        title, link, image_url = await scraper.search_rezka(name, images=True)
         if title:
             result_id = hashlib.md5(link.encode()).hexdigest()
             keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -525,7 +525,8 @@ async def inline_search(query: types.InlineQuery):
                     message_text=f"<b>🎞 Название:</b> <a href=\"{link}\">{title}</a>",
                     parse_mode=types.ParseMode.HTML
                 ),
-                reply_markup=keyboard
+                reply_markup=keyboard,
+                thumb_url=image_url
             )
             await query.answer([result], cache_time=1, is_personal=True, switch_pm_text="Нажмите, чтобы перейти в бота.", switch_pm_parameter="start")
         else:
